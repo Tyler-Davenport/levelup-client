@@ -1,6 +1,5 @@
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import { clientCredentials } from './client';
+import { signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { clientCredentials, firebaseAuth } from './client';
 
 const checkUser = (uid) =>
   new Promise((resolve, reject) => {
@@ -31,12 +30,12 @@ const registerUser = (userInfo) =>
   });
 
 const signIn = () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider);
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(firebaseAuth, provider);
 };
 
 const signOut = () => {
-  firebase.auth().signOut();
+  firebaseSignOut(firebaseAuth);
 };
 
 export { checkUser, registerUser, signIn, signOut };

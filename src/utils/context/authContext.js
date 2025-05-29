@@ -1,7 +1,8 @@
 'use client';
 
 import { checkUser } from '@/utils/auth'; // ✅ Step 1: Import checkUser
-import { firebase } from '@/utils/client';
+import { firebaseAuth } from '@/utils/client';
+import { onAuthStateChanged } from 'firebase/auth';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const AuthContext = createContext();
@@ -22,7 +23,7 @@ function AuthProvider(props) {
 
   // ✅ Step 4: Wire up full user data in onAuthStateChanged
   useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged((fbUser) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (fbUser) => {
       if (fbUser) {
         setOAuthUser(fbUser);
         checkUser(fbUser.uid).then((gamerInfo) => {
