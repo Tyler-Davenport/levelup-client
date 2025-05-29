@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { clientCredentials } from '../client';
 
 const getGames = () =>
@@ -8,5 +9,14 @@ const getGames = () =>
       .catch(reject);
   });
 
+const createGame = (game) =>
+  new Promise((resolve, reject) => {
+    fetch('', {}).then().catch();
+  });
+
+const getGameTypes = () =>
+  new Promise((resolve, reject) => {
+    fetch('', {}).then().catch();
+  });
 // eslint-disable-next-line import/prefer-default-export
-export { getGames };
+export { createGame, getGames, getGameTypes };
