@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
-import { createEvent } from '../../utils/data/eventData';
+import { createEvent, updateEvent } from '../../utils/data/eventData';
 
 const initialState = {
   description: '',
@@ -11,9 +11,20 @@ const initialState = {
   gameId: '',
 };
 
-function EventForm({ user, games }) {
+function EventForm({ user, games, eventObj }) {
   const [currentEvent, setCurrentEvent] = useState(initialState);
   const router = useRouter();
+
+  useEffect(() => {
+    if (eventObj) {
+      setCurrentEvent({
+        description: eventObj.description,
+        date: eventObj.date,
+        time: eventObj.time,
+        gameId: eventObj.game.id, // assuming game is an object with `id`
+      });
+    }
+  }, [eventObj]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,11 +41,16 @@ function EventForm({ user, games }) {
       description: currentEvent.description,
       date: currentEvent.date,
       time: currentEvent.time,
-      gameId: Number(currentEvent.gameId),
-      organizerId: user.uid, // Make sure your backend expects this
+      game: Number(currentEvent.gameId),
+      organizer: user.uid,
     };
 
-    createEvent(event).then(() => router.push('/events'));
+    if (eventObj?.id) {
+      // Use eventObj.id as the id argument for updateEvent
+      updateEvent(event, eventObj.id).then(() => router.push('/events'));
+    } else {
+      createEvent(event).then(() => router.push('/events'));
+    }
   };
 
   return (
@@ -66,7 +82,7 @@ function EventForm({ user, games }) {
         </Form.Select>
       </Form.Group>
 
-      <Button type="submit">Register Event</Button>
+      <Button type="submit">{eventObj?.id ? 'Update' : 'Register'} Event</Button>
     </Form>
   );
 }
@@ -81,6 +97,15 @@ EventForm.propTypes = {
       title: PropTypes.string,
     }),
   ).isRequired,
+  eventObj: PropTypes.shape({
+    id: PropTypes.number,
+    description: PropTypes.string,
+    date: PropTypes.string,
+    time: PropTypes.string,
+    game: PropTypes.shape({
+      id: PropTypes.number,
+    }),
+  }),
 };
 
 export default EventForm;

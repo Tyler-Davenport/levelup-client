@@ -17,10 +17,47 @@ const createEvent = (event) =>
       },
       body: JSON.stringify(event),
     })
-      .then((response) => response.json())
+      .then(async (res) => {
+        const text = await res.text();
+        return text ? JSON.parse(text) : {};
+      })
       .then(resolve)
       .catch(reject);
   });
 
+const updateEvent = (event, id) =>
+  new Promise((resolve, reject) => {
+    fetch(`${clientCredentials.databaseURL}/events/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(event),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        return text ? JSON.parse(text) : {};
+      })
+      .then(resolve)
+      .catch(reject);
+  });
+
+const getSingleEvent = (id) =>
+  new Promise((resolve, reject) => {
+    fetch(`${clientCredentials.databaseURL}/events/${id}`)
+      .then((res) => res.json())
+      .then(resolve)
+      .catch(reject);
+  });
+
+const deleteEvent = (id) =>
+  new Promise((resolve, reject) => {
+    fetch(`${clientCredentials.databaseURL}/events/${id}`, {
+      method: 'DELETE',
+    })
+      .then((res) => (res.ok ? resolve(true) : reject(new Error('Failed to delete event'))))
+      .catch(reject);
+  });
+
 // Export both functions
-export { createEvent, getEvents };
+export { createEvent, deleteEvent, getEvents, getSingleEvent, updateEvent };

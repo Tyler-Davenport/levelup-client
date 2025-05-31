@@ -3,14 +3,17 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import EventCard from '../../src/components/event/eventCard';
-import { getEvents } from '../../src/utils/data/eventData';
+import { deleteEvent, getEvents } from '../../src/utils/data/eventData';
 
 function EventsPage() {
   const [events, setEvents] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
-    getEvents().then((data) => setEvents(data));
+    getEvents().then((data) => {
+      console.log('Events data:', data);
+      setEvents(data);
+    });
   }, []);
 
   return (
@@ -23,11 +26,25 @@ function EventsPage() {
         </Button>
       </div>
 
-      {events.map((event) => (
-        <section key={`event--${event.id}`} className="event">
-          <EventCard description={event.description} date={event.date} time={event.time} game={event.game} organizer={event.organizer} />
-        </section>
-      ))}
+      {events.map((event) => {
+        // Use id or pk for the event identifier (avoid _id to prevent lint error)
+        const eventId = event.id || event.pk;
+        return (
+          <section key={`event--${eventId}`} className="event">
+            <EventCard id={eventId} description={event.description} date={event.date} time={event.time} game={event.game} organizer={event.organizer} />
+            <Button
+              variant="danger"
+              className="ms-2"
+              onClick={async () => {
+                await deleteEvent(eventId);
+                getEvents().then((data) => setEvents(data));
+              }}
+            >
+              Delete
+            </Button>
+          </section>
+        );
+      })}
     </div>
   );
 }
