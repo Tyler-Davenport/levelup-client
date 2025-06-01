@@ -3,18 +3,25 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import EventCard from '../../src/components/event/eventCard';
+import { useAuth } from '../../src/utils/context/authContext';
 import { deleteEvent, getEvents } from '../../src/utils/data/eventData';
 
 function EventsPage() {
   const [events, setEvents] = useState([]);
   const router = useRouter();
+  const { user } = useAuth();
+
+  // Helper to refresh events
+  const refreshEvents = () => {
+    if (user?.uid) {
+      getEvents(user.uid).then((data) => setEvents(data));
+    }
+  };
 
   useEffect(() => {
-    getEvents().then((data) => {
-      console.log('Events data:', data);
-      setEvents(data);
-    });
-  }, []);
+    refreshEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
 
   return (
     <div>
@@ -27,17 +34,18 @@ function EventsPage() {
       </div>
 
       {events.map((event) => {
-        // Use id or pk for the event identifier (avoid _id to prevent lint error)
         const eventId = event.id || event.pk;
+        // Determine if the current user has joined this event
+        const joined = Array.isArray(event.attendees) ? event.attendees.some((att) => att.uid === user?.uid) : false;
         return (
           <section key={`event--${eventId}`} className="event">
-            <EventCard id={eventId} description={event.description} date={event.date} time={event.time} game={event.game} organizer={event.organizer} />
+            <EventCard id={eventId} description={event.description} date={event.date} time={event.time} game={event.game} organizer={event.organizer} joined={joined} onUpdate={refreshEvents} />
             <Button
               variant="danger"
               className="ms-2"
               onClick={async () => {
                 await deleteEvent(eventId);
-                getEvents().then((data) => setEvents(data));
+                refreshEvents();
               }}
             >
               Delete
