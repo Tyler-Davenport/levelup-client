@@ -1,12 +1,12 @@
 import { clientCredentials } from '../client';
 
-const getEvents = () =>
-  new Promise((resolve, reject) => {
-    fetch(`${clientCredentials.databaseURL}/events`)
-      .then((response) => response.json())
-      .then(resolve)
-      .catch(reject);
-  });
+const getEvents = (uid) =>
+  fetch(`${clientCredentials.databaseURL}/events`, {
+    method: 'GET',
+    headers: {
+      Authorization: uid,
+    },
+  }).then((res) => res.json());
 
 const createEvent = (event) =>
   new Promise((resolve, reject) => {
@@ -57,6 +57,28 @@ const deleteEvent = (id) =>
     })
       .then((res) => (res.ok ? resolve(true) : reject(new Error('Failed to delete event'))))
       .catch(reject);
+  });
+
+const endpoint = `${clientCredentials.databaseURL}/events`;
+
+export const joinEvent = (eventId, uid) =>
+  fetch(`${endpoint}/${eventId}/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: uid, // ← no Bearer/Token prefix
+    },
+    body: JSON.stringify({ user_id: uid }), // Use user_id to match backend
+  }).then((res) => res.json());
+
+export const leaveEvent = (eventId, uid) =>
+  fetch(`${endpoint}/${eventId}/leave`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: uid,
+    },
+    body: JSON.stringify({ user_id: uid }), // Send user_id in body for backend compatibility
   });
 
 // Export both functions
